@@ -98,16 +98,16 @@ cp .env.development.example .env.development
 ```
 
 ### 3. Start the Development Loop
-BrowserOS provides a supervisor script that boots up the WXT extension (cockpit), the Rust MCP server, and launches the browser simultaneously.
+BrowserOS provides a supervisor script that boots up the WXT extension, the Rust server, and launches the browser simultaneously.
 
-To start it with a fresh, isolated profile, run:
+To start the full agent with the built-in chat panel in a fresh, isolated profile, run:
 ```bash
-bun run dev:claw:watch:new
+bun run dev:watch:new
 ```
-*(Note: Use `bun run dev:claw:watch` if you want it to remember your logins and settings across restarts).*
+*(Note: Use `bun run dev:watch` if you want it to remember your logins and settings across restarts).*
 
-> [!WARNING] **Linux Caveat**
-> Since you are on Linux, you must download the Linux AppImage and place it in a location where the supervisor can automatically find it (e.g. your `~/Downloads` or `~/Applications` folder).
+> [!WARNING] **Linux Caveat & macOS Path Fixes**
+> Since you are on Linux, you must download the Linux AppImage and place it in your `~/Applications` folder. You also need to fix some hardcoded macOS paths in the BrowserOS repository.
 > 
 > ```bash
 > # 1. Create a directory for the app if it doesn't exist
@@ -119,6 +119,16 @@ bun run dev:claw:watch:new
 > # 3. Make the AppImage executable
 > chmod +x ~/Applications/BrowserOS.AppImage
 > ```
-> Once placed there, the `bun run dev:claw:watch:new` command will automatically locate it and launch the browser successfully!
+>
+> **Fixing Hardcoded macOS Paths:** 
+> The development scripts default to a macOS binary path (`/Applications/BrowserOS.app/...`). To run the supervisor on Linux without getting a `"wxt" exited with code 1` error, apply the following patches:
+> 
+> 1. In `browseros_repo/packages/browseros-agent/.env.development`, update the `BROWSEROS_BINARY` to point to your AppImage (e.g., `BROWSEROS_BINARY=/home/username/Applications/BrowserOS.AppImage`).
+> 2. In `browseros_repo/packages/browseros-agent/tools/dev/browser/args.go`, change the `BrowserOSBinaryPath` and `BrowserClawBinaryPath` constants to point to the AppImage.
+> 3. In `browseros_repo/packages/browseros-agent/tools/dev/proc/process.go`, add `strings.Contains(command, "BrowserOS.AppImage")` to the `isBrowserAppCommand` function so the dev server can successfully kill and restart the browser on code changes.
+>
+> *(Note: If you are using the cloned repository provided in this project workspace, these patches have already been applied for you!)*
+>
+> Once placed and patched, the `bun run dev:watch:new` command will automatically locate it and launch the browser successfully!
 
-Once the browser launches, the agent will automatically connect to your local DOM. As soon as you give the agent a prompt on one of our test sites, the patched `input.ts` will intercept the action, ping the Python middleware on port `8000`, and block it if it detects a threat!
+Once the browser launches, you can open the side panel by clicking the BrowserOS extension icon. As soon as you give the agent a prompt on one of our test sites, the patched `input.ts` will intercept the action, ping the Python middleware on port `8000`, and block it if it detects a threat!

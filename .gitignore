@@ -2,3 +2,9 @@ venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+browseros_repo/
+*.pptx
+save.txt
+plan.md
+proposal.md
+patch.diff
