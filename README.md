@@ -107,6 +107,18 @@ bun run dev:claw:watch:new
 *(Note: Use `bun run dev:claw:watch` if you want it to remember your logins and settings across restarts).*
 
 > [!WARNING] **Linux Caveat**
-> By default, the BrowserOS development supervisor expects the browser binary to be in the macOS `/Applications/...` folder. Since you are on Linux, you must download the Linux AppImage (`wget https://cdn.browseros.com/download/BrowserOS_neo.AppImage`), make it executable, and update the supervisor scripts (or environment variables) to point to the local Linux binary before running the dev loop.
+> Since you are on Linux, you must download the Linux AppImage and place it in a location where the supervisor can automatically find it (e.g. your `~/Downloads` or `~/Applications` folder).
+> 
+> ```bash
+> # 1. Create a directory for the app if it doesn't exist
+> mkdir -p ~/Applications
+> 
+> # 2. Download the BrowserOS Linux AppImage
+> wget -O ~/Applications/BrowserOS.AppImage https://cdn.browseros.com/download/BrowserOS_neo.AppImage
+> 
+> # 3. Make the AppImage executable
+> chmod +x ~/Applications/BrowserOS.AppImage
+> ```
+> Once placed there, the `bun run dev:claw:watch:new` command will automatically locate it and launch the browser successfully!
 
 Once the browser launches, the agent will automatically connect to your local DOM. As soon as you give the agent a prompt on one of our test sites, the patched `input.ts` will intercept the action, ping the Python middleware on port `8000`, and block it if it detects a threat!
