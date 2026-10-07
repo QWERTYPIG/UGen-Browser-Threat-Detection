@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pytest
+playwright
+flask
+onnxruntime
+torch
+beautifulsoup4
