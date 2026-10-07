@@ -28,6 +28,25 @@ This repository contains the prototype for a zero-trust, real-time threat detect
    pytest tests/test_validation.py
    ```
 
+## End-to-End Testing with BrowserOS
+
+This repository includes an automated startup script and a locally patched version of BrowserOS configured to route all DOM actions through the Security Middleware execution gate.
+
+1. Start the Security Middleware and Local Test Sites:
+   ```bash
+   ./start_agentic_stack.sh
+   ```
+
+2. In a separate terminal, launch the patched BrowserOS agent:
+   ```bash
+   cd browseros_repo/packages/browseros-agent
+   bun install
+   bun run dev
+   ```
+
+Once running, direct BrowserOS to the test sites hosted on `http://localhost:5000` (e.g., `/login_01`, `/ui_redressing_02`) to see the execution gating in action.
+
+
 ## Hardware Mode (ASUS UGen300 NPU)
 To enable the ASUS UGen300 NPU integration, ensure that HailoRT is correctly configured and set the environment variable before starting the middleware:
 ```bash
