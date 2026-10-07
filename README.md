@@ -37,14 +37,12 @@ This repository includes an automated startup script and a locally patched versi
    ./start_agentic_stack.sh
    ```
 
-2. In a separate terminal, launch the patched BrowserOS agent:
+2. In a separate terminal, launch the mock BrowserOS agent to see the execution gating block threats live in a real browser:
    ```bash
-   cd browseros_repo/packages/browseros-agent
-   bun install
-   bun run dev
+   source venv/bin/activate
+   python mock_browseros.py
    ```
 
-Once running, direct BrowserOS to the test sites hosted on `http://localhost:5000` (e.g., `/login_01`, `/ui_redressing_02`) to see the execution gating in action.
 
 
 ## Hardware Mode (ASUS UGen300 NPU)
