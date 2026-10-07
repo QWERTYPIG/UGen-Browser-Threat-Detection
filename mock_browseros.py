@@ -1,11 +1,9 @@
+import sys
 import requests
+import subprocess
 from playwright.sync_api import sync_playwright
 
 def execute_agentic_action(page, action_callback):
-    """
-    Execution gating wrapper for BrowserOS (Mock).
-    Checks the page state before allowing the agent to perform an action.
-    """
     current_url = page.url
     dom_content = page.content()
     
@@ -64,41 +62,77 @@ def execute_agentic_action(page, action_callback):
             }});
         }}""")
         
-        # Give the user time to read the warning and interact with the button
-        page.wait_for_timeout(8000)
+        page.wait_for_timeout(5000)
         return False
 
-def run_browseros_demo():
-    print("Starting Mock BrowserOS Agent...\n")
+def visit_site(site_key):
     with sync_playwright() as p:
-        # Launch headed so you can see it working!
         browser = p.chromium.launch(headless=False) 
         page = browser.new_page()
 
-        # ----------------------------------------------------
-        print("--- Testing Benign Site ---")
-        page.goto("http://localhost:5000/login_01")
-        
-        def agent_fill_login():
-            page.fill("input[name='username']", "admin")
-            page.fill("input[name='password']", "secret")
-            print("🤖 Agent typing credentials...")
-            
-        execute_agentic_action(page, agent_fill_login)
+        if site_key == "login_01":
+            print("--- Testing Benign Site: Login ---")
+            page.goto("http://localhost:5000/login_01")
+            def agent_fill_login():
+                page.fill("input[name='username']", "admin")
+                page.fill("input[name='password']", "secret")
+                print("🤖 Agent typing credentials...")
+            execute_agentic_action(page, agent_fill_login)
+            page.wait_for_timeout(2000)
 
-        # ----------------------------------------------------
-        page.wait_for_timeout(2000) # Pause so you can see it
-        print("\n--- Testing Malicious Site (UI Redressing) ---")
-        page.goto("http://localhost:5000/ui_redressing_02")
-        
-        def agent_click_button():
-            page.click("button")
-            print("🤖 Agent clicked the button...")
-            
-        execute_agentic_action(page, agent_click_button)
-        
-        page.wait_for_timeout(2000) # Pause before closing
+        elif site_key == "dashboard_02":
+            print("--- Testing Benign Site: Dashboard ---")
+            page.goto("http://localhost:5000/dashboard_02")
+            def agent_read_dashboard():
+                print("🤖 Agent reading complex dashboard data...")
+            execute_agentic_action(page, agent_read_dashboard)
+            page.wait_for_timeout(2000)
+
+        elif site_key == "checkout_03":
+            print("--- Testing Benign Site: Checkout ---")
+            page.goto("http://localhost:5000/checkout_03")
+            def agent_fill_checkout():
+                page.fill("input[name='card']", "1234-5678-9012-3456")
+                print("🤖 Agent typing card details...")
+            execute_agentic_action(page, agent_fill_checkout)
+            page.wait_for_timeout(2000)
+
+        elif site_key == "prompt_injection_01":
+            print("--- Testing Malicious Site: Prompt Injection ---")
+            page.goto("http://localhost:5000/prompt_injection_01")
+            def agent_read_blog():
+                print("🤖 Agent reading blog post...")
+            execute_agentic_action(page, agent_read_blog)
+
+        elif site_key == "ui_redressing_02":
+            print("--- Testing Malicious Site: UI Redressing (Clickjacking) ---")
+            page.goto("http://localhost:5000/ui_redressing_02")
+            def agent_click_button():
+                page.click("button")
+                print("🤖 Agent clicked the button...")
+            execute_agentic_action(page, agent_click_button)
+
+        elif site_key == "dom_mutation_03":
+            print("--- Testing Malicious Site: DOM Mutation ---")
+            page.goto("http://localhost:5000/dom_mutation_03")
+            page.wait_for_timeout(1500) # Wait for the malicious JS to mutate the form action
+            def agent_submit_form():
+                page.fill("input[name='email']", "test@example.com")
+                print("🤖 Agent filling out profile...")
+            execute_agentic_action(page, agent_submit_form)
+
         browser.close()
 
 if __name__ == "__main__":
-    run_browseros_demo()
+    sites = [
+        "login_01", "dashboard_02", "checkout_03",
+        "prompt_injection_01", "ui_redressing_02", "dom_mutation_03"
+    ]
+    
+    if len(sys.argv) > 1 and sys.argv[1] in sites:
+        visit_site(sys.argv[1])
+    else:
+        print("Starting Mock BrowserOS Showcase...\n")
+        for site in sites:
+            print(f"\n>>> Launching new process for {site} <<<\n")
+            subprocess.run([sys.executable, __file__, site])
