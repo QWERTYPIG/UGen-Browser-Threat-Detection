@@ -32,7 +32,40 @@ def execute_agentic_action(page, action_callback):
         threat = result.get('threat_type')
         reason = result.get('reason')
         print(f"🚨 THREAT DETECTED: {threat} - {reason}")
-        print("🛑 Halting BrowserOS execution. Alerting operator.")
+        print("🛑 Halting BrowserOS execution and displaying warning overlay.")
+        
+        # Inject a visible warning overlay to the user
+        page.evaluate(f"""() => {{
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.backgroundColor = 'rgba(200, 0, 0, 0.95)';
+            overlay.style.color = 'white';
+            overlay.style.zIndex = '999999';
+            overlay.style.display = 'flex';
+            overlay.style.flexDirection = 'column';
+            overlay.style.justifyContent = 'center';
+            overlay.style.alignItems = 'center';
+            overlay.style.fontFamily = 'sans-serif';
+            
+            overlay.innerHTML = `
+                <h1 style="font-size: 3rem; margin-bottom: 20px;">🚨 Security Threat Detected</h1>
+                <h2 style="font-size: 1.5rem; margin-bottom: 10px;">Threat: {threat}</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 40px; max-width: 600px; text-align: center;">Reason: {reason}</p>
+                <button id="leave-page-btn" style="padding: 15px 30px; font-size: 1.2rem; font-weight: bold; background-color: white; color: darkred; border: none; border-radius: 5px; cursor: pointer;">Leave Page Safely</button>
+            `;
+            document.body.appendChild(overlay);
+            
+            document.getElementById('leave-page-btn').addEventListener('click', () => {{
+                window.location.href = 'about:blank';
+            }});
+        }}""")
+        
+        # Give the user time to read the warning and interact with the button
+        page.wait_for_timeout(8000)
         return False
 
 def run_browseros_demo():
