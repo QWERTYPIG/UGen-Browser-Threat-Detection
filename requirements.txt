@@ -6,3 +6,4 @@ flask
 onnxruntime
 torch
 beautifulsoup4
+requests
